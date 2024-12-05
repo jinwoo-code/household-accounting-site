@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="logoimg/logo-black.png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">    
+    <script src="https://use.fontawesome.com/releases/v6.5.2/js/all.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 및 회원가입</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: "Jua", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        body {
+            background-color: #e9e8e4;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('logoimg/a-modern-and-youthful-logo-for-a-high-school-commu-VfS-HMzMRkeGkv-5E1snuQ-j7BqbbixQGqppNp5Yh3Acw.jpeg');
+            background-size: 800px;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.92);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .hidden {
+            display: none;
+        }
+        .message {
+            margin-top: 10px;
+            font-size: 14px;
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        div {
+            font-size: 20px;
+            padding: 3px;
+            margin: 3px;
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #4d69e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0px 0px 1px 1px rgb(0, 0, 0);
+            margin: 5px;
+        }
+        input {
+            width: 230px;
+            height: 30px;
+            font-size: 16px;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .links {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .links a {
+            color: #4d69e1;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form id="signUpForm" class="hidden">
+            <a href="#" id="backToLoginButton" style="margin-left: -380px; color: #000;"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>회원가입</h1>
+            <div>이름 : <input type="text" id="name" required placeholder="닉네임"/></div>
+            <div>ID : <input type="email" id="signUpEmail" required placeholder="email"/></div>
+            <div>PW : <input type="password" id="signUpPassword" required placeholder="password"/></div>
+            <button type="submit" id="signUpButton">회원가입 하기</button>
+            <button type="button" id="goToLoginButton" style="display: none;">로그인하러 가기</button>
+            <div id="signUpMessage" class="message"></div>
+        </form>
+
+        <form id="signInForm">
+            <h1>로그인</h1>
+            <div>ID : <input type="email" id="signInEmail" required placeholder="email"/></div>
+            <div>PW : <input type="password" id="signInPassword" required placeholder="password"/></div>
+            <button type="submit" id="signInButton">로그인 하기</button>
+            <div class="links">
+                <a href="#" id="goToSignUpButton">회원가입</a> |
+                <a href="#" id="goToResetPasswordButton">비밀번호 재설정</a>
+            </div>
+            <div id="signInMessage" class="message"></div>
+        </form>
+
+        <form id="resetPasswordForm" class="hidden">
+            <a href="#" id="backToLoginButtonFromReset" style="margin-left: -380px; color: #000;"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>비밀번호 재설정</h1>
+            <div>Email : <input type="email" id="resetEmail" required placeholder="email"/></div>
+            <button type="submit" id="resetPasswordButton">비밀번호 재설정 링크 받기</button>
+            <div id="resetPasswordMessage" class="message"></div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkWj7sWjpLivK4FqbQyDiN8E4BofBYrUA",
+            authDomain: "football-e7071.firebaseapp.com",
+            projectId: "football-e7071",
+            storageBucket: "football-e7071.appspot.com",
+            messagingSenderId: "1025737339448",
+            appId: "1:1025737339448:web:d3e052dbbb9b60dbafaccd",
+            measurementId: "G-RSCND48DEM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth();
+        const db = getFirestore(app);
+
+        document.getElementById('goToSignUpButton').addEventListener('click', () => {
+            document.getElementById('signInForm').classList.add('hidden');
+            document.getElementById('signUpForm').classList.remove('hidden');
+        });
+
+        document.getElementById('backToLoginButton').addEventListener('click', () => {
+            document.getElementById('signUpForm').classList.add('hidden');
+            document.getElementById('signInForm').classList.remove('hidden');
+        });
+
+        document.getElementById('goToResetPasswordButton').addEventListener('click', () => {
+            document.getElementById('signInForm').classList.add('hidden');
+            document.getElementById('resetPasswordForm').classList.remove('hidden');
+        });
+
+        document.getElementById('backToLoginButtonFromReset').addEventListener('click', () => {
+            document.getElementById('resetPasswordForm').classList.add('hidden');
+            document.getElementById('signInForm').classList.remove('hidden');
+        });
+
+        document.getElementById('signUpButton').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const email = document.getElementById('signUpEmail').value;
+            const password = document.getElementById('signUpPassword').value;
+            const name = document.getElementById('name').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                await setDoc(doc(db, "users", user.uid), {
+                    email,
+                    name
+                });
+                window.confirm('회원가입 성공!');
+                document.getElementById('signUpForm').reset();
+            } catch (error) {
+                console.log('error', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    window.confirm('해당 이메일은 이미 사용 중입니다. 로그인 페이지로 이동합니다.');
+                    document.getElementById('signUpForm').classList.add('hidden');
+                    document.getElementById('signInForm').classList.remove('hidden');
+                } else {
+                    window.confirm(`회원가입 실패: ${error.message}`);
+                }
+            }
+        });
+
+        document.getElementById('signInButton').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const email = document.getElementById('signInEmail').value;
+            const password = document.getElementById('signInPassword').value;
+
+            try {
+                if (!email || !password) {
+                    throw new Error("Email and Password are required.");
+                }
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                window.confirm('로그인 성공!');
+                document.getElementById('signInForm').reset();
+                window.location.href = "index.html";
+            } catch (error) {
+                console.log('error', error);
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    window.confirm('로그인 실패: 이메일 또는 비밀번호가 잘못되었습니다.');
+                } else {
+                    window.confirm(`로그인 실패: ${error.message}`);
+                }
+            }
+        });
+
+        document.getElementById('resetPasswordButton').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                window.confirm('비밀번호 재설정 이메일이 전송되었습니다.');
+                document.getElementById('resetPasswordForm').reset();
+                document.getElementById('resetPasswordForm').classList.add('hidden');
+                document.getElementById('signInForm').classList.remove('hidden');
+            } catch (error) {
+                console.log('error', error);
+                window.confirm(`비밀번호 재설정 실패: ${error.message}`);
+            }
+        });
+    </script>
+</body>
+</html>

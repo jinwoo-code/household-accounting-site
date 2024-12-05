@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>가계부</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js" defer></script>
+    <style>
+       *{
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            text-align: center;
+        }
+        nav {
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        nav a {
+            color: #333;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+        #loginLinks {
+            display: flex;
+            align-items: center;
+        }
+        #main-content {
+            padding: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, button, select {
+            padding: 10px;
+            margin: 5px;
+        }
+        canvas {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            word-wrap: break-word; /* 긴 텍스트를 줄바꿈 처리 */
+        }
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer; /* 헤더를 클릭할 수 있음을 표시 */
+        }
+        th.sorted-asc::after {
+            content: " ▲";
+        }
+        th.sorted-desc::after {
+            content: " ▼";
+        }
+        #categoryModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+        }
+        #categoryModal button {
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+        <div id="loginLinks" class="user-menu">
+            <div id="profileButton"><i class="fa fa-user"></i> <span id="userNameNav">사용자</span> <i class="fa fa-caret-down"></i></div>
+            <div class="user-menu-content">
+                <a href="#" id="logoutLink">로그아웃</a>
+            </div>
+        </div>
+    </nav>
+    <div id="main-content">
+        <h1>가계부</h1>
+        <form id="expenseForm">
+            <select id="expenseCategory" required>
+                <option value="" disabled selected>분류 선택</option>
+                <option value="식비">식비</option>
+                <option value="고정지출">고정지출</option>
+                <option value="옷값">옷값</option>
+                <option value="여가">여가</option>
+                <option value="기타">기타</option>
+                <option value="addCategory" style="display: none;">+ 항목 추가</option>
+            </select>
+            <input type="text" id="expenseDescription" placeholder="설명" required>
+            <input type="number" id="expenseAmount" placeholder="금액" required>
+            <input type="date" id="expenseDate" required>
+            <button type="submit">추가</button>
+        </form>
+        <select id="viewSelect">
+            <option value="year">년</option>
+            <option value="month">월</option>
+            <!-- <option value="week">주</option>
+            <option value="day">일</option> -->
+        </select>
+        <select id="chartTypeSelect">
+            <option value="date">날짜별</option>
+            <option value="category">분류별</option>
+        </select>
+        <select id="chartFormatSelect">
+            <option value="bar">막대그래프</option>
+            <option value="line">꺾은선그래프</option>
+            <option value="pie">원그래프</option>
+        </select>
+        <h2 id="chartTitle"></h2>
+        <canvas id="expenseChart"></canvas>
+        <table>
+            <thead>
+                <tr>
+                    <th data-column="category">분류</th>
+                    <th data-column="date">날짜</th>
+                    <th data-column="description">설명</th>
+                    <th data-column="amount">금액</th>
+                    <th>삭제</th>
+                </tr>
+            </thead>
+            <tbody id="expenseTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 분류 추가 모달 -->
+    <div id="categoryModal">
+        <h2>새 분류 추가</h2>
+        <input type="text" id="newCategory" placeholder="새 분류 입력" required>
+        <button id="addCategoryButton">추가</button>
+        <button id="cancelCategoryButton">취소</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
